@@ -12,27 +12,11 @@
     cd /home/path/to/your/workspace/src
     catkin_init_workspace
     git clone https://github.com/doosan-robotics/doosan-robot
-    cd /home/path/to/your/workspace
     rosdep install --from-paths doosan-robot --ignore-src --rosdistro kinetic -r -y 
     catkin_make
     source ./devel/setup.bash
 #### package list
-    sudo apt-get install ros-kinetic-rqt*
-    ros-kinetic-moveit*
-    ros-kinetic-industrial-core
-    ros-kinetic-gazebo-ros-control
-    ros-kinetic-joint-state-controller 
-    ros-kinetic-effort-controllers 
-    ros-kinetic-position-controllers 
-    ros-kinetic-ros-controllers
-    ros-kinetic-ros-control
-    ros-kinetic-serial
-    ros-kinetic-lms1xx
-    ros-kinetic-interactive-marker-twist-server
-    ros-kinetic-twist-mux
-    ros-kinetic-imu-tools
-    ros-kinetic-controller-manager
-    ros-kinetic-robot-localization
+    sudo apt-get install ros-kinetic-rqt* ros-kinetic-moveit* ros-kinetic-industrial-core ros-kinetic-gazebo-ros-control ros-kinetic-joint-state-controller ros-kinetic-effort-controllers ros-kinetic-position-controllers ros-kinetic-ros-controllers ros-kinetic-ros-control ros-kinetic-serial ros-kinetic-lms1xx ros-kinetic-interactive-marker-twist-server ros-kinetic-twist-mux ros-kinetic-imu-tools ros-kinetic-controller-manager ros-kinetic-robot-localization
 
 # *usage* <a id="chapter-3"></a>
 #### DRCF Emulator
@@ -133,7 +117,7 @@ __If you don`t have real doosan controller, you must execute emulator before run
 > insert argument mobile:=husky
 - single robot on mobile
 ```bash
-roslaunch dsr_launcher rviz_single_robot.launch host:=192.168.137.100 mode:=virtual model:=m1013 color:=blue mobile:=husky
+roslaunch dsr_launcher single_robot_rviz.launch host:=192.168.137.100 mode:=virtual model:=m1013 color:=blue mobile:=husky
   
 <run application node>
   <cpp>
@@ -216,35 +200,6 @@ rosservice call /dsr/set_joint_move "jointAngle: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 jointVelocity: [50.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 jointAcceleration: [50.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 radius: 0.0"
-```
-
-#### Run Mobile Robot 
-+ Install external package for kinetic
-```python  
-sudo apt install ros-kinetic-interactive-markers
-sudo apt install ros-kinetic-interactive-marker-twist-server
-sudo apt install ros-kinetic-twist-mux ros-kinetic-twist-mux-msgs ros-kinetic-robot-localization
-```
-+ Install external package for melodic
-```python      
-sudo apt install ros-melodic-interactive-markers
-sudo apt install ros-melodic-twist-mux ros-melodic-twist-mux-msgs ros-melodic-robot-localization      
-#sudo apt install ros-melodic-interactive-marker-twist-server (not-exist) need form src install
-#ros-melodic-interactive-marker-twist-server for source install
-cd ~/catkin_ws/src
-git clone https://github.com/ros-visualization/interactive_marker_twist_server.git
-rosdep install --from-paths ~/catkin_ws/src --ignore-src
-cd ~/catkin_ws
-catkin_make
-source ~/catkin_ws/devel/setup.bash
-```
-
-```bash
-#roslaunch dsr_launcher multi_gazebo.launch mobile:=true
-roslaunch dsr_launcher mobile_m1013.launch
-or
-roslaunch dsr_launcher mobile_robot.launch model:=m1013 color:=white
-rosrun dsr_example_cpp m1013_on_mobile
 ```
 
 # diagnostic

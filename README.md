@@ -17,7 +17,14 @@
     catkin_make
     source ./devel/setup.bash
 #### package list
+    sudo apt-get install ros-melodic-rqt* ros-melodic-moveit* ros-melodic-industrial-core ros-melodic-gazebo-ros-control ros-melodic-joint-state-controller ros-melodic-effort-controllers ros-melodic-position-controllers ros-melodic-ros-controllers ros-melodic-ros-control ros-melodic-serial ros-melodic-twist-mux ros-melodic-imu-tools ros-melodic-controller-manager ros-melodic-robot-localization
 
+    #ros-melodic-interactive-marker-twist-server for source install
+    cd ~/catkin_ws/src git clone https://github.com/ros-visualization/interactive_marker_twist_server.git
+    rosdep install --from-paths ~/catkin_ws/src --ignore-src
+    cd ~/catkin_ws 
+    catkin_make 
+    source ~/catkin_ws/devel/setup.bash
 
 # *usage* <a id="chapter-3"></a>
 #### DRCF Emulator
@@ -199,35 +206,6 @@ rosservice call /dsr/set_joint_move "jointAngle: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 jointVelocity: [50.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 jointAcceleration: [50.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 radius: 0.0"
-```
-
-#### Run Mobile Robot 
-+ Install external package for kinetic
-```python  
-sudo apt install ros-kinetic-interactive-markers
-sudo apt install ros-kinetic-interactive-marker-twist-server
-sudo apt install ros-kinetic-twist-mux ros-kinetic-twist-mux-msgs ros-kinetic-robot-localization
-```
-+ Install external package for melodic
-```python      
-sudo apt install ros-melodic-interactive-markers
-sudo apt install ros-melodic-twist-mux ros-melodic-twist-mux-msgs ros-melodic-robot-localization      
-#sudo apt install ros-melodic-interactive-marker-twist-server (not-exist) need form src install
-#ros-melodic-interactive-marker-twist-server for source install
-cd ~/catkin_ws/src
-git clone https://github.com/ros-visualization/interactive_marker_twist_server.git
-rosdep install --from-paths ~/catkin_ws/src --ignore-src
-cd ~/catkin_ws
-catkin_make
-source ~/catkin_ws/devel/setup.bash
-```
-
-```bash
-#roslaunch dsr_launcher multi_gazebo.launch mobile:=true
-roslaunch dsr_launcher mobile_m1013.launch
-or
-roslaunch dsr_launcher mobile_robot.launch model:=m1013 color:=white
-rosrun dsr_example_cpp m1013_on_mobile
 ```
 
 # diagnostic

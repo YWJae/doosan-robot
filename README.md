@@ -133,7 +133,7 @@ __If you don`t have real doosan controller, you must execute emulator before run
 > insert argument mobile:=husky
 - single robot on mobile
 ```bash
-roslaunch dsr_launcher rviz_single_robot.launch host:=192.168.137.100 mode:=virtual model:=m1013 color:=blue mobile:=husky
+roslaunch dsr_launcher single_robot_rviz.launch host:=192.168.137.100 mode:=virtual model:=m1013 color:=blue mobile:=husky
   
 <run application node>
   <cpp>
@@ -143,7 +143,7 @@ roslaunch dsr_launcher rviz_single_robot.launch host:=192.168.137.100 mode:=virt
 ```
 - multi robot on mobile
 ```bash
-roslaunch dsr_launcher rviz_multi_robot.launch host:=192.168.137.100 mode:=virtual model:=m1013 color:=blue mobile:=husky
+roslaunch dsr_launcher multi_robot_rviz.launch host:=192.168.137.100 mode:=virtual model:=m1013 color:=blue mobile:=husky
 
 <run application node>
   <cpp>

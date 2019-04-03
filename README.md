@@ -13,7 +13,7 @@
     catkin_init_workspace
     git clone https://github.com/doosan-robotics/doosan-robot
     cd /home/path/to/your/workspace
-    rosdep install --from-paths doosan-robot --ignore-src --rosdistro kinetic -r -y 
+    rosdep install --from-paths doosan-robot --ignore-src --rosdistro melodic -r -y 
     catkin_make
     source ./devel/setup.bash
 #### package list
@@ -41,8 +41,6 @@ Emulator has local IP(127.0.0.1).
 ```bash
 cd /home/path/to/workspace/doosan-robot/common/bin/DRCF
 sudo ./DRCF64 <port>   ## 64bits OS
-or 
-sudo ./DRCF32 <port>   ## 32bits OS
 ``` 
 #### dsr_description
 ```bash

@@ -15,12 +15,12 @@ The interactive_marker_twist_server must be installed manually in melodic.
     source ~/catkin_ws/devel/setup.bash
 
 #### package list
-    sudo apt-get install ros-kinetic-rqt* ros-kinetic-moveit* ros-kinetic-industrial-core ros-kinetic-gazebo-ros-control ros-kinetic-joint-state-controller ros-kinetic-effort-controllers ros-kinetic-position-controllers ros-kinetic-ros-controllers ros-kinetic-ros-control ros-kinetic-serial
+    sudo apt-get install ros-melodic-rqt* ros-melodic-moveit* ros-melodic-industrial-core ros-melodic-gazebo-ros-control ros-melodic-joint-state-controller ros-melodic-effort-controllers ros-melodic-position-controllers ros-melodic-ros-controllers ros-melodic-ros-control ros-melodic-serial
     
 __packages for mobile robot__
 The interactive_marker_twist_server must be installed manually in melodic.
 
-    sudo apt-get ros-kinetic-lms1xx ros-kinetic-twist-mux ros-kinetic-imu-tools ros-kinetic-controller-manager ros-kinetic-robot-localization
+    sudo apt-get ros-melodic-lms1xx ros-melodic-twist-mux ros-melodic-imu-tools ros-melodic-controller-manager ros-melodic-robot-localization
 
 
 # *usage* <a id="chapter-3"></a>
@@ -30,8 +30,6 @@ Emulator has local IP(127.0.0.1) default port=12345.
 ```bash
 cd ~/catkin_ws/doosan-robot/common/bin/DRCF
 sudo ./DRCF64 <port>   ## 64bits OS
-or 
-sudo ./DRCF32 <port>   ## 32bits OS
 ``` 
 
 > _$ sudo ./DRCF 12345_

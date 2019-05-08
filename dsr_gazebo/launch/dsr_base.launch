@@ -91,6 +91,9 @@
   <group if="$(eval arg('mobile') == 'husky')">
     <node pkg="tf" type="static_transform_publisher" name="base_link_tf" ns="$(arg ns)"
           args="$(arg x) $(arg y) $(arg z) $(arg yaw) 0 0 map $(arg ns)/odom 100"/>
+    
+    <node pkg="tf" type="static_transform_publisher" name="fix_mobile_and_arm" ns="$(arg ns)"
+          args="0 0 0 0 0 0 map $(arg ns)/fix 100"/>
   </group>
 
 

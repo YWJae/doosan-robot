@@ -5,16 +5,16 @@
   <arg name="rviz"  default="true"/>
   <arg name="world" default="empty.world"/>
   <arg name="ns"    default="dsr01"/>
-  <!--<arg name="host" default="127.0.0.1"/>
-  <arg name="mode" default="virtual"/>-->
-  <arg name="host" default="192.168.137.100"/>
-  <arg name="mode" default="real"/>
+  <arg name="host" default="127.0.0.1"/>
+  <arg name="mode" default="virtual"/>
+  <!--<arg name="host" default="192.168.137.100"/>
+  <arg name="mode" default="real"/>-->
   <arg name="port" default="12345"/>
   <arg name="model" default="m1013"/>
   <arg name="color" default="white"/>
   <arg name="gripper" default="none"/>
   <!--<arg name="gripper" default="robotiq_2f"/>-->
-  <arg name="mobile" default="none"/>
+  <arg name="mobile" default="husky"/>
   <arg name="x"     default="0"/>
   <arg name="y"   default="0"/>
   <arg name="yaw" default="0"/>

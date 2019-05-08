@@ -231,7 +231,7 @@ int main(int argc, char** argv)
 
     std::string mode;
     int _rate;
-    nh.getParam("/" + ROBOT_ID + ROBOT_MODEL +"/mode", mode);
+    nh.getParam("/" + ROBOT_ID + ROBOT_MODEL + "/mode", mode);
     ROS_INFO("current mode is : %s", mode.c_str());
     if(mode == "real"){
         drl_start(ROBOT_SYSTEM_REAL, drlCodeMove + drlCodeReset);  

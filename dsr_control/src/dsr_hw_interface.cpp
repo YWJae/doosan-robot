@@ -5,12 +5,23 @@
  * Copyright (c) 2019 Doosan Robotics
  * Use of this source code is governed by the BSD, see LICENSE
 */
+#define END_EFFECTOR_ODOM_PUB
 
 #include "dsr_control/dsr_hw_interface.h"
 #include <boost/thread/thread.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/bind.hpp>
 #include <sstream>
+#include <nav_msgs/Odometry.h>
+#include <tf/tf.h>
+
+#ifdef END_EFFECTOR_ODOM_PUB
+    #define mm2meter(mm)  ((mm) * 1.0 / 1000.0)
+    ros::Publisher ToolOdometry;
+    nav_msgs::Odometry odom;
+    tf::Matrix3x3 mat_rpy;
+    tf::Quaternion mat_qt;
+#endif
 
 CDRFL Drfl;
 Serial_comm ser_comm;
@@ -159,7 +170,7 @@ namespace dsr_control{
         for (int i = 0; i < NUM_JOINT; i++){
             if(pData){  
                g_stDrState.fCurrentPosj[i] = pData->_tCtrl._tJoint._fActualPos[i];    
-               ///g_stDrState.fCurrentPosx[i] = pData->_tCtrl._tWorld._fActualPos[i];    
+               g_stDrState.fCurrentPosx[i] = pData->_tCtrl._tTool._fActualPos[0][i];   
             }
         }
     }
@@ -304,8 +315,43 @@ namespace dsr_control{
         for (int i = 0; i < NUM_JOINT; i++)
         {
             msg.current_posj[i]    = m_stDrState.fCurrentPosj[i];
-            ///msg.current_posx[i]    = m_stDrState.fCurrentPosx[i];
+            msg.current_posx[i]    = m_stDrState.fCurrentPosx[i];
         }
+
+#ifdef END_EFFECTOR_ODOM_PUB
+            odom.header.frame_id = "dsr01/link6";
+            odom.child_frame_id = "camera_link";
+            odom.header.stamp = ros::Time::now();
+            
+            odom.pose.pose.position.x = mm2meter(m_stDrState.fCurrentPosx[0]);
+            odom.pose.pose.position.y = mm2meter(m_stDrState.fCurrentPosx[1]);
+            odom.pose.pose.position.z = mm2meter(m_stDrState.fCurrentPosx[2]);
+            
+           
+            mat_rpy.setEulerYPR( deg2rad(m_stDrState.fCurrentPosx[2]),
+                                 deg2rad(m_stDrState.fCurrentPosx[1]),
+                                 deg2rad(m_stDrState.fCurrentPosx[0]) );
+                   
+            mat_rpy.getRotation(mat_qt);
+
+            odom.pose.pose.orientation.x = mat_qt.getX();
+            odom.pose.pose.orientation.y = mat_qt.getY();
+            odom.pose.pose.orientation.z = mat_qt.getZ();
+            odom.pose.pose.orientation.w = mat_qt.getW();
+
+            ToolOdometry.publish(odom);
+
+            // ROS_INFO("X: %lf",    odom.pose.pose.position.x);
+            // ROS_INFO("Y: %lf",    odom.pose.pose.position.y);
+            // ROS_INFO("Z: %lf",    odom.pose.pose.position.z);
+            // ROS_INFO("QT_X: %lf", odom.pose.pose.orientation.x);
+            // ROS_INFO("QT_Y: %lf", odom.pose.pose.orientation.y);
+            // ROS_INFO("QT_Z: %lf", odom.pose.pose.orientation.z);
+            // ROS_INFO("QT_W: %lf", odom.pose.pose.orientation.w);
+            // ROS_INFO("=======================================");
+
+#endif
+
         msg.io_control_box      = m_stDrState.nIoControlBox;
         //msg.io_modbus;    GJH
         //msg.error;        GJH
@@ -419,6 +465,12 @@ namespace dsr_control{
         // Publisher msg 
         m_PubRobotState = private_nh_.advertise<dsr_msgs::RobotState>("state",100);
         m_PubRobotError = private_nh_.advertise<dsr_msgs::RobotError>("error",100);
+//
+/* 추가작성(윤원재): End-effector의 Odometry msg 퍼블리시 */
+#ifdef END_EFFECTOR_ODOM_PUB
+        ToolOdometry = private_nh_.advertise<nav_msgs::Odometry>("odom",100);
+#endif
+//      
         // gazebo에 joint position 전달
         m_PubtoGazebo = private_nh_.advertise<std_msgs::Float64MultiArray>("/dsr_joint_position_controller/command",10);
         // moveit의 trajectory/goal를 받아 제어기로 전달

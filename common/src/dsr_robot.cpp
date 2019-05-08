@@ -965,7 +965,7 @@ int CDsrRobot::drl_start(int nRobotSystem, string strCode)
 
     if(srvDrlStart.call(srv))
     {         
-        //ROS_INFO("receive srv, srv.response.success: %ld\n", (long int)srv.response.success);
+        ROS_INFO("receive srv, srv.response.success: %ld\n", (long int)srv.response.success);
         return (srv.response.success);
     }
     else

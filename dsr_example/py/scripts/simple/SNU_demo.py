@@ -4,6 +4,8 @@
 import sys
 import copy
 import rospy
+from copy import deepcopy
+from time import sleep
 import threading, time
 import moveit_commander
 import moveit_msgs.msg
@@ -11,11 +13,38 @@ import geometry_msgs.msg
 from math import pi
 from std_msgs.msg import String
 from moveit_commander.conversions import pose_to_list
+from tf.transformations import quaternion_from_euler
 from ur5_vision_system.msg import Tracker
+from ar_track_alvar_msgs.msg import AlvarMarker
+from ar_track_alvar_msgs.msg import AlvarMarkers
 
 
-INIT_JOINT_ANGLE = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # Angle -> unit in [rad]
-TRACKER_TOPIC = "cxy" # Set the tracker topic name
+
+# Some of Contstants
+DISTANCE_AWAY_FROM_TARGET = 0.2
+
+EPSILON = 0.0000001
+DEG2RAD = 3.141592 / 180.0
+
+ROLL = 180.0 * DEG2RAD
+PITCH = 0.0 * DEG2RAD
+YAW = 0.0 * DEG2RAD
+
+# Set the tracker topic name
+TRACKER_TOPIC = "cxy"
+AR_MARKER_TOPIC = 'ar_pose_marker'
+
+# initial joint angle in [rad]
+INIT_JOINT_ANGLE = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+# end-effector poses for searching the target [m], [rad]
+SEARCH_POSE = [ 
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+              ]
+
 
 def all_close(goal, actual, tolerance):
   """
@@ -60,6 +89,18 @@ class MoveGroupPythonInteface(object):
     group_name = "arm"
     self.group = moveit_commander.MoveGroupCommander(group_name)
 
+    # Set the reference frame for pose targets, Set the M1013 arm reference frame accordingly
+    # reference_frame = "/base_link"
+    # self.gruop.set_pose_reference_frame(reference_frame)
+
+    # Allow replanning to increase the odds of a solution
+    self.group.allow_replanning(True) 
+    self.group.set_goal_position_tolerance(0.01)
+    self.group.set_goal_orientation_tolerance(0.1)
+    self.group.set_planning_time(0.1)
+    self.group.set_max_acceleration_scaling_factor(.5)
+    self.group.set_max_velocity_scaling_factor(.65)
+
     ## We create a `DisplayTrajectory`_ publisher which is used later to publish trajectories for RViz to visualize:
     self.display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                    moveit_msgs.msg.DisplayTrajectory,
@@ -72,13 +113,19 @@ class MoveGroupPythonInteface(object):
     t1.daemon = True 
     t1.start()
 
+    # t1 = threading.Thread(target=self.thread_subscriber_arMarks)
+    # t1.daemon = True 
+    # t1.start()
+
+    
+
     # Getting Basic Information: the name of the reference frame for this robot:
     self.planning_frame = self.group.get_planning_frame()
     print "============ Reference frame: %s" % self.planning_frame
 
     # We can also print the name of the end-effector link for this group:
-    self.eef_link = self.group.get_end_effector_link()
-    print "============ End effector: %s" % self.eef_link
+    self.end_effector_link = self.group.get_end_effector_link()
+    print "============ End effector: %s" % self.end_effector_link
 
     # We can get a list of all the groups in the robot:
     self.group_names = self.robot.get_group_names()
@@ -99,7 +146,7 @@ class MoveGroupPythonInteface(object):
 ##############################################################################################################
 
   def thread_subscriber_tracker(self):
-      rospy.Subscriber('/'+TRACKER_TOPIC, Tracker, self.tracker_cb, queue_size=1)
+      rospy.Subscriber('/'+TRACKER_TOPIC, Tracker, self.tracker_cb, queue_size=10)
       rospy.spin()
 
   def tracker_cb(self, msg):
@@ -107,6 +154,17 @@ class MoveGroupPythonInteface(object):
       self.target_pose.position.y = msg.x
       self.target_pose.position.z = msg.z
 
+  def thread_subscriber_arMarks(self):
+    rospy.Subscriber('/'+AR_MARKER_TOPIC, AlvarMarkers, self.arMarker_cb, queue_size=10)
+    rospy.spin()
+
+  def arMarker_cb(self, msg):
+    try:
+      self.target_pose = msg.markers[0].pose.pose
+    except IndexError:
+      return
+    print "%s" % len(msg.markers)
+      
   def go_to_joint_state(self):
     joint_goal = self.group.get_current_joint_values()
 
@@ -135,52 +193,85 @@ class MoveGroupPythonInteface(object):
     ## We can plan a motion for this group to a desired pose for the end-effector:
     pose_goal = geometry_msgs.msg.Pose()
     
-    pose_goal.orientation.w = 1.0
+    qt = quaternion_from_euler(YAW, PITCH, ROLL)
+   # pose_goal.orientation.w = qt[0]
+  #  pose_goal.orientation.x = qt[1]
+  #  pose_goal.orientation.y = qt[2]
+  #  pose_goal.orientation.z = qt[3]
     pose_goal.position.x = self.target_pose.position.x
     pose_goal.position.y = self.target_pose.position.y
-    pose_goal.position.z = self.target_pose.position.z
+    pose_goal.position.z = self.target_pose.position.z + DISTANCE_AWAY_FROM_TARGET
 
     self.group.set_pose_target(pose_goal)
+    plan = self.group.plan()
+    sleep(0.4)
+    self.group.execute(plan)
+    
+    # #############
+    # waypoints = []
+    # # start_pose = self.group.get_current_pose(self.end_effector_link).pose
+    # # wpose = deepcopy(start_pose)
+    # waypoints.append(deepcopy(self.target_pose))
 
-    ## Now, we call the planner to compute the plan and execute it.
-    plan = self.group.go(wait=True)
-    # Calling `stop()` ensures that there is no residual movement
-    self.group.stop()
-    # It is always good to clear your targets after planning with poses.
-    # Note: there is no equivalent function for clear_joint_value_targets()
-    self.group.clear_pose_targets()
+    # fraction = 0.0
+    # maxtries = 100
+    # attempts = 0
 
-    # For testing:
-    # Note that since this section of code will not be included in the tutorials
-    # we use the class variable rather than the copied state variable
-    current_pose = self.group.get_current_pose().pose
-    return all_close(pose_goal, current_pose, 0.01)
+    # # Set the internal state to the current state
+    # self.group.set_start_state_to_current_state()
+
+    # # Plan the Cartesian path connecting the waypoints
+    # while (1 - fraction) > 0.2 and attempts < maxtries:
+    #     (plan, fraction) = self.group.compute_cartesian_path (waypoints, 0.05, 0.0, True)
+
+    #     # Increment the number of attempts
+    #     attempts += 1
+
+    #     # Print out a progress message
+    #     if attempts % 10 == 0:
+    #         rospy.loginfo("Still trying after " + str(attempts) + " attempts...")
+
+    # # If we have a complete plan, execute the trajectory
+    # if (1 - fraction) <= 0.2:
+    #     attemps = 0
+    #     rospy.loginfo("Path computed successfully. Moving the arm.")
+    #     self.group.execute(plan)
+    #     rospy.loginfo("Path execution complete.")
+    # else:
+    #     rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(maxtries) + " attempts.")
+    # ############
+
+
+
+#
+    # ## Now, we call the planner to compute the plan and execute it.
+    # plan = self.group.go(wait=True)
+    # # Calling `stop()` ensures that there is no residual movement
+    # self.group.stop()
+    # # It is always good to clear your targets after planning with poses.
+    # # Note: there is no equivalent function for clear_joint_value_targets()
+    # self.group.clear_pose_targets()
+
+    # # For testing:
+    # # Note that since this section of code will not be included in the tutorials
+    # # we use the class variable rather than the copied state variable
+    # current_pose = self.group.get_current_pose().pose
+    # return all_close(pose_goal, current_pose, 0.01)
 
 
   def plan_cartesian_path(self, scale=1):
     ## You can plan a Cartesian path directly by specifying a list of waypoints for the end-effector to go through:
     waypoints = []
 
-    wpose = self.group.get_current_pose().pose
-    wpose.position.z -= scale * 0.1  # First move up (z)
-    wpose.position.y += scale * 0.2  # and sideways (y)
-    waypoints.append(copy.deepcopy(wpose))
+    start_pose = self.group.get_current_pose(self.end_effector_link).pose
+    wpose = deepcopy(start_pose)
+    waypoints.append(deepcopy(self.target_pose))
 
-    wpose.position.x += scale * 0.1  # Second move forward/backwards in (x)
-    waypoints.append(copy.deepcopy(wpose))
-
-    wpose.position.y -= scale * 0.1  # Third move sideways (y)
-    waypoints.append(copy.deepcopy(wpose))
-
-    # We want the Cartesian path to be interpolated at a resolution of 1 cm
-    # which is why we will specify 0.01 as the eef_step in Cartesian
-    # translation.  We will disable the jump threshold by setting it to 0.0 disabling:
     (plan, fraction) = self.group.compute_cartesian_path(
-                                       waypoints,   # waypoints to follow
-                                       0.01,        # eef_step
-                                       0.0)         # jump_threshold
-
-    # Note: We are just planning, not asking move_group to actually move the robot yet:
+                                                      waypoints,  # waypoints to follow
+                                                      0.01,       # eef_step
+                                                      0.0,        # jump_threshold
+                                                      True)
     return plan, fraction
 
 

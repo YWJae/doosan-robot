@@ -1,9 +1,13 @@
 <launch>
     <env name="ROSCONSOLE_CONFIG_FILE"  value="$(find dsr_control)/config/console.conf"/>
-    <arg name="ns" default="dsr01"/>
+    <arg name="ns" default="dsr"/>
+    <!--<arg name="host" default="192.168.3.50"/>
+    <arg name="fake_execution" default="false"/>
+    <arg name="mode" default="real"/>-->
     <arg name="host" default="127.0.0.1"/>
-	<arg name="port" default="12345"/>
+    <arg name="fake_execution" default="true"/>
     <arg name="mode" default="virtual"/>
+	<arg name="port" default="12345"/>
     <arg name="model" default="m1013"/>
     <arg name="color" default="white"/>
     <arg name="gripper" default="none"/>
@@ -31,29 +35,14 @@
 
     </node>
     <!-- model에 따른 moveit 실행 -->
-    <group if="$(eval arg('model') == 'm0609')">
-        <include file="$(find moveit_config_m0609)/launch/m0609.launch" ns="$(arg ns)">
-            <arg name="fake_execution" value="false"/>
-            <arg name="color" value="$(arg color)"/>
-        </include>
-    </group>
-    <group if="$(eval arg('model') == 'm0617')">
-        <include file="$(find moveit_config_m0617)/launch/m0617.launch" ns="$(arg ns)">
-            <arg name="fake_execution" value="false"/>
-            <arg name="color" value="$(arg color)"/>
-        </include>
-    </group>
+
+
     <group if="$(eval arg('model') == 'm1013')">
         <include file="$(find moveit_config_m1013)/launch/m1013.launch" ns="$(arg ns)">
-            <arg name="fake_execution" value="false"/>
+            <arg name="fake_execution" value="$(arg fake_execution)"/>
             <arg name="color" value="$(arg color)"/>
         </include>
     </group>
-    <group if="$(eval arg('model') == 'm1509')">
-        <include file="$(find moveit_config_m1509)/launch/m1509.launch" ns="$(arg ns)">
-            <arg name="fake_execution" value="false"/>
-            <arg name="color" value="$(arg color)"/>
-        </include>
-    </group>
+
 
 </launch>

@@ -13,6 +13,7 @@ add_message_files(
     RobotError.msg
     RobotState.msg
     RobotStop.msg
+    Tracker.msg
 )
 
 add_service_files(

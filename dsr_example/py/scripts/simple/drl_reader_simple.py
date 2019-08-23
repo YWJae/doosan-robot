@@ -12,7 +12,7 @@ sys.dont_write_bytecode = True
 sys.path.append( os.path.abspath(os.path.join(os.path.dirname(__file__),"../../../../common/imp")) ) # get import pass : DSR_ROBOT.py 
 
 # for single robot 
-ROBOT_ID     = "dsr01"
+ROBOT_ID     = "dsr"
 ROBOT_MODEL  = "m1013"
 import DR_init
 DR_init.__dsr__id = ROBOT_ID
@@ -34,7 +34,8 @@ def fileRead():
     #fd = open("/home/dra/catkin_ws/doosan-robot-drl-reader/common/servicepack/scripts/movej_test.drl", 'r')
     file_dir = os.path.abspath(__file__) 
     print(file_dir)
-    fd = open("drl_files/movej_test.drl", 'r')
+    fd = open("/home/yun/catkin_ws/src/doosan-robot/dsr_example/py/scripts/simple/drl_files/movej_test.drl", 'r')
+
     drl_code = ""
     while True:
         line = fd.readline()
@@ -122,26 +123,27 @@ def thread_subscriber():
     #rospy.spinner(2)    
   
 if __name__ == "__main__":
-    rospy.init_node('single_robot_simple_py')
+    rospy.init_node('drl__py')
     rospy.on_shutdown(shutdown)
-    #set_robot_mode  = rospy.ServiceProxy('/'+ROBOT_ID +ROBOT_MODEL+'/system/set_robot_mode', SetRobotMode)
-    #get_robot_mode  = rospy.ServiceProxy('/'+ROBOT_ID +ROBOT_MODEL+'/system/get_robot_mode', GetRobotMode)
-    #get_drl_state   = rospy.ServiceProxy('/'+ROBOT_ID +ROBOT_MODEL+'/drl/get_drl_state', GetDrlState)
-    #t1 = threading.Thread(target=thread_subscriber)
-    #t1.daemon = True 
-    #t1.start()
+    set_robot_mode  = rospy.ServiceProxy('/'+ROBOT_ID +ROBOT_MODEL+'/system/set_robot_mode', SetRobotMode)
+    get_robot_mode  = rospy.ServiceProxy('/'+ROBOT_ID +ROBOT_MODEL+'/system/get_robot_mode', GetRobotMode)
+    get_drl_state   = rospy.ServiceProxy('/'+ROBOT_ID +ROBOT_MODEL+'/drl/get_drl_state', GetDrlState)
+    # t1 = threading.Thread(target=thread_subscriber)
+    # t1.daemon = True 
+    # t1.start()
 
     pub_stop = rospy.Publisher('/'+ROBOT_ID +ROBOT_MODEL+'/stop', RobotStop, queue_size=10)           
     print(fileRead())
+    print "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
   #  if get_robot_mode() != ROBOT_MODE_AUTONOMOUS :
     set_robot_mode(ROBOT_MODE_AUTONOMOUS)
-    res = drl_script_run(ROBOT_SYSTEM_REAL, fileRead())
-    #print("#################" + str(res) + "###############")
+    res = drl_script_run(ROBOT_SYSTEM_VIRTUAL, fileRead())
+    print("#################" + str(res) + "###############")
     
     while not rospy.is_shutdown():
         pass
-        #print(get_drl_state())
-        #print(get_robot_mode())
-        #print(fileRead())
+        # print(get_drl_state())
+        # print(get_robot_mode())
+        # print(fileRead())
     #drl_script_stop(stop_mode=STOP_TYPE_QUICK)
     print 'good bye!'

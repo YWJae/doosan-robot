@@ -16,7 +16,7 @@ sys.path.append( os.path.abspath(os.path.join(os.path.dirname(__file__),"../../.
 ROBOT_SYSTEM_VIRTUAL = 1
 ROBOT_SYSTEM_REAL = 0
 
-ROBOT_ID     = "dsr01"
+ROBOT_ID     = "dsr"
 ROBOT_MODEL  = "m1013"
 import DR_init
 DR_init.__dsr__id = ROBOT_ID
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     set_robot_mode(ROBOT_MODE_AUTONOMOUS)
     drlCodeMove = "set_velj(50)\nset_accj(50)\nmovej([0,0,90,0,90,0])\n"
     drlCodeReset = "movej([0,0,0,0,0,0])\n"
-    drl_script_run(ROBOT_SYSTEM_REAL, drlCodeMove + drlCodeReset)
+    drl_script_run(ROBOT_SYSTEM_VIRTUAL, drlCodeMove + drlCodeReset)
     while not rospy.is_shutdown():
         pass
     print 'good bye!'

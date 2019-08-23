@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- camera D-415 serial: 839512060220 -->
+  <include file="$(find ur5_vision_system)/launch/test_camera.launch.xml"/> 
+  <!--node name="dsr_vision" pkg="dsr_example" type="ur5_object_detect.py" output="screen"/-->
+
+
+</launch>

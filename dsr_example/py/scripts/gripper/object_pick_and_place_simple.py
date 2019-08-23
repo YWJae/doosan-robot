@@ -12,7 +12,7 @@ sys.dont_write_bytecode = True
 sys.path.append( os.path.abspath(os.path.join(os.path.dirname(__file__),"../../../../common/imp")) ) # get import pass : DSR_ROBOT.py 
 
 # for single robot 
-ROBOT_ID     = "dsr01"
+ROBOT_ID     = "dsr"
 ROBOT_MODEL  = "m1013"
 import DR_init
 DR_init.__dsr__id = ROBOT_ID

@@ -103,13 +103,12 @@ def joy_cb(msg):
     print(msg.axes)
     print(msg.buttons)
     if msg.buttons[BOTTON_START] == 1 and msg.buttons[BOTTON_BACK] == 1:
-        print'ddddddddddddddddddddddd'
         r.movej(targetPos, 50, 50)
     elif msg.buttons[BOTTON_CENTER] == 1:
         r.movej(hommingPos, 50, 50)
     
     # Analog 신호 하나라도 들어오면 m_joyAnalogFlag -> set 됨 (global flag)
-    if msg.axes[AXIS_LEFT_V] != 0 or msg.axes[AXIS_LEFT_H] != 0 or msg.axes[AXIS_RIGHT_V] != 0 or msg.axes[AXIS_RIGHT_H] != 0 or msg.axes[AXIS_UPPER_LEFT] != 0 or msg.axes[AXIS_UPPER_RIGHT] != 0:
+    if msg.axes[AXIS_LEFT_V] != 0 or msg.axes[AXIS_LEFT_H] != 0 or msg.axes[AXIS_RIGHT_V] != 0 or msg.axes[AXIS_RIGHT_H] != 0 or msg.axes[AXIS_UPPER_LEFT] < 1.0 or msg.axes[AXIS_UPPER_RIGHT] < 1.0 or msg.axes[AXIS_DIR_V] != 0 or msg.axes[AXIS_DIR_H] != 0:
         m_joyAnalogFlag = True
     else:
         m_joyAnalogFlag = False
@@ -128,54 +127,92 @@ def joy_cb(msg):
         else:
             m_RxyCompareFlag = True
 
-    # 버튼 -> m_joyButtonFlag 로 구분
-    if msg.axes[AXIS_DIR_H] != 0 or msg.axes[AXIS_DIR_V] != 0:
-        m_joyButtonFlag = True
+    # 왼쪽 방향 버튼 -> m_ZCompareFlag 로 구분
+    if msg.axes[AXIS_DIR_V] != 0 or msg.axes[AXIS_DIR_H] != 0:
+        m_ZCompareFlag = True
     else:
-        m_joyButtonFlag = False
+        m_ZCompareFlag = False
 
+    ## 버튼 -> m_joyButtonFlag 로 구분 (버튼을 위한 flag -> 수정 필요)
+    #if msg.axes[AXIS_DIR_H] != 0 or msg.axes[AXIS_DIR_V] != 0:
+    #    m_joyButtonFlag = True
+    #else:
+    #    m_joyButtonFlag = False
+
+
+
+    ### BOTTON 제어
     #if m_joyJogFlag == -1 and not m_joyAnalogFlag and m_joyButtonFlag:
-    #   if msg.axes[AXIS_DIR_H] == 1:
-    #       m_joyJogFlag = JOG_AXIS_TASK_Y
-    #       m_joyJogVel  = -ROBOT_SPEED_LINEAR
-    #   if msg.axes[AXIS_DIR_H] == -1:
-    #       m_joyJogFlag = JOG_AXIS_TASK_Y
-    #       m_joyJogVel  = ROBOT_SPEED_LINEAR
-    #       
-    #   if msg.axes[AXIS_DIR_V] == 1:
-    #       m_joyJogFlag = JOG_AXIS_TASK_X
-    #       m_joyJogVel  = ROBOT_SPEED_LINEAR
-    #       
-    #   if msg.axes[AXIS_DIR_V] == -1:
-    #       m_joyJogFlag = JOG_AXIS_TASK_X
-    #       m_joyJogVel  = -ROBOT_SPEED_LINEAR
-    #       
-    #   r.jog(m_joyJogFlag, MOVE_REFERNECE_TOOL, m_joyJogVel)
+    #    # BOTTON_LEFT_UP/DOWN -> Z-direction Translation
+    #    if msg.axes[AXIS_DIR_V] == 1:
+    #        m_joyJogFlag = JOG_AXIS_TASK_Z
+    #        m_joyJogVel = ROBOT_SPEED_LINEAR
+    #    if msg.axes[AXIS_DIR_V] == -1:
+    #        m_joyJogFlag = JOG_AXIS_TASK_Z
+    #        m_joyJogVel = -ROBOT_SPEED_LINEAR
+    #
+    #    # BOTTON_LEFT_LEFT/RIGHT -> Z-direction Rotation
+    #    if msg.axes[AXIS_DIR_H] == 1:
+    #        m_joyJogFlag = JOG_AXIS_TASK_RZ
+    #        m_joyJogVel  = -ROBOT_SPEED_LINEAR
+    #    if msg.axes[AXIS_DIR_H] == -1:
+    #        m_joyJogFlag = JOG_AXIS_TASK_RZ
+    #        m_joyJogVel  = ROBOT_SPEED_LINEAR
+    #
+    #    r.jog(m_joyJogFlag, MOVE_REFERENECE_TOOL, m_joyJogVel)
 
+
+    ### ANALOG 제어
+    print "B: m_joyJogFlag: %s"%m_joyJogFlag
+    print "B: m_joyButtonFlag: %s"%m_joyButtonFlag
+    print "B: m_joyAnalogFlag: %s"%m_joyAnalogFlag
     if m_joyJogFlag == -1 and not m_joyButtonFlag and m_joyAnalogFlag: # m_joyAnalogFlag에 대한 움직임
-        # UPPER_LEFT/RIGHT -> Z UP/DOWN 으로 움직임
-        if msg.axes[AXIS_UPPER_LEFT] > 0:
-            m_joyJogFlag = JOG_AXIS_TASK_Z
-            m_joyJogVel = ROBOT_SPEED_LINEAR
-        if msg.axes[AXIS_UPPER_RIGHT] > 0:
-            m_joyJogFlag = JOG_AXIS_TASK_Z
-            m_joyJogVel = -ROBOT_SPEED_LINEAR
+        print "A: m_joyJogFlag: %s"%m_joyJogFlag
+        print "A: m_joyButtonFlag: %s"%m_joyButtonFlag
+        print "A: m_joyAnalogFlag: %s"%m_joyAnalogFlag
+        ## AXIS_UPPER_LEFT/RIGHT -> Z-direction Translation (-> 나중에 Gripper Open/Close로 바꾸기)
+        #if msg.axes[AXIS_UPPER_LEFT] < 1.0:
+        #    m_joyJogFlag = JOG_AXIS_TASK_Z
+        #    m_joyJogVel = ROBOT_SPEED_LINEAR
+        #if msg.axes[AXIS_UPPER_RIGHT] < 1.0:
+        #    m_joyJogFlag = JOG_AXIS_TASK_Z
+        #    m_joyJogVel = -ROBOT_SPEED_LINEAR
+        
+        # AXIS_DIR_LEFT/RIGHT -> Z-direction Rotation
+        if m_ZCompareFlag:
+            if msg.axes[AXIS_DIR_H] == 1:
+                m_joyJogFlag = JOG_AXIS_TASK_RZ
+                m_joyJogVel = -ROBOT_SPEED_LINEAR
+            if msg.axes[AXIS_DIR_H] == -1:
+                m_joyJogFlag = JOG_AXIS_TASK_RZ
+                m_joyJogVel = ROBOT_SPEED_LINEAR
 
-        # UPPER_LEFT/RIGHT -> Z UP/DOWN 으로 움직임
+            # AXIS_DIR_LEFT/RIGHT -> Z-direction Translation
+            if msg.axes[AXIS_DIR_V] == 1:
+                m_joyJogFlag = JOG_AXIS_TASK_Z
+                m_joyJogVel = -ROBOT_SPEED_LINEAR
+            if msg.axes[AXIS_DIR_V] == -1:
+                m_joyJogFlag = JOG_AXIS_TASK_Z
+                m_joyJogVel = ROBOT_SPEED_LINEAR
+
+
+        # AXIS_LEFT_UP/DOWN -> X-direction Translation
         if msg.axes[AXIS_LEFT_V] > 0 and m_TxyCompareFlag == 0:
             m_joyJogFlag = JOG_AXIS_TASK_X
-            m_joyJogVel = ROBOT_SPEED_LINEAR
+            m_joyJogVel = -ROBOT_SPEED_LINEAR
         if msg.axes[AXIS_LEFT_V] < 0 and m_TxyCompareFlag == 0:
             m_joyJogFlag = JOG_AXIS_TASK_X
-            m_joyJogVel = -ROBOT_SPEED_LINEAR
+            m_joyJogVel = ROBOT_SPEED_LINEAR
 
+        # AXIS_LEFT_LEFT/RIGHT -> Y-direction Translation
         if msg.axes[AXIS_LEFT_H] > 0 and m_TxyCompareFlag == 1:
             m_joyJogFlag = JOG_AXIS_TASK_Y
-            m_joyJogVel = -ROBOT_SPEED_LINEAR
+            m_joyJogVel = ROBOT_SPEED_LINEAR
         if msg.axes[AXIS_LEFT_H] < 0 and m_TxyCompareFlag == 1:
             m_joyJogFlag = JOG_AXIS_TASK_Y
-            m_joyJogVel = ROBOT_SPEED_LINEAR
-        ###
+            m_joyJogVel = -ROBOT_SPEED_LINEAR
+
+        # AXIS_RIGHT_UP/DOWN -> Y-direction Rotation
         if msg.axes[AXIS_RIGHT_V] > 0 and m_RxyCompareFlag == 0:
             m_joyJogFlag = JOG_AXIS_TASK_RY
             m_joyJogVel = ROBOT_SPEED_LINEAR
@@ -183,12 +220,13 @@ def joy_cb(msg):
             m_joyJogFlag = JOG_AXIS_TASK_RY
             m_joyJogVel = -ROBOT_SPEED_LINEAR
 
+        # AXIS_RIGHT_LEFT/RIGHT -> X-direction Rotation
         if msg.axes[AXIS_RIGHT_H] > 0 and m_RxyCompareFlag == 1:
             m_joyJogFlag = JOG_AXIS_TASK_RX
-            m_joyJogVel = -ROBOT_SPEED_LINEAR
+            m_joyJogVel = ROBOT_SPEED_LINEAR
         if msg.axes[AXIS_RIGHT_H] < 0 and m_RxyCompareFlag == 1:
             m_joyJogFlag = JOG_AXIS_TASK_RX
-            m_joyJogVel = ROBOT_SPEED_LINEAR
+            m_joyJogVel = -ROBOT_SPEED_LINEAR
 
         r.jog(m_joyJogFlag, MOVE_REFERENCE_TOOL, m_joyJogVel)
 
